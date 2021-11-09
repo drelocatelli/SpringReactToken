@@ -3,12 +3,14 @@ package com.example.demo.controller;
 import com.example.demo.dto.JwtRequest;
 import com.example.demo.dto.JwtResponse;
 import com.example.demo.dto.UserDTO;
+import com.example.demo.repository.UserRepositoryPaging;
 import com.example.demo.security.util.JwtTokenUtil;
 import com.example.demo.security.util.ValidateEmail;
 import com.example.demo.service.JwtUserDetailsService;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.example.demo.model.User;
@@ -32,6 +34,9 @@ public class UserController {
 	private UserService service;
 
 	@Autowired
+	private UserRepositoryPaging userRepositoryPaging;
+
+	@Autowired
 	private AuthenticationManager authenticationManager;
 
 	@Autowired
@@ -40,8 +45,8 @@ public class UserController {
 	@Autowired
 	private JwtUserDetailsService userDetailsService;
 
-	@GetMapping("{id}")
-	public ResponseEntity<?> getUserById(@PathVariable("id") Long id) throws Exception {
+	@GetMapping(params = {"id"})
+	public ResponseEntity<?> getUserById(@RequestParam("id") Long id) throws Exception {
 		Optional<User> user = service.findById(id);
 
 		if(!user.isPresent()) {
@@ -50,6 +55,11 @@ public class UserController {
 
 		return ResponseEntity.ok(user);
 
+	}
+
+	@GetMapping("/perpage")
+	public ResponseEntity<?> getAllUsersPerPage(Pageable pageable) {
+		return ResponseEntity.ok(userRepositoryPaging.findAll(pageable));
 	}
 
 	@GetMapping

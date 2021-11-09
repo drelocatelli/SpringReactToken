@@ -15,7 +15,7 @@ public class UserService {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
@@ -26,29 +26,27 @@ public class UserService {
 	public List<User> findAll() {
 		return userRepository.findAll();
 	}
-	
+
 	public User getByEmail(String email) throws Exception {
 		return userRepository.findByEmail(email).orElseThrow(() -> new Exception("Email doesnt exists"));
 	}
-	
+
 	@Transactional
 	public User saveUser(User user) {
 		EmailValid(user.getEmail());
-		
+
 		String passwordEncrypted = passwordEncoder.encode(user.getPassword());
 		user.setPassword(passwordEncrypted);
-		
+
 		return userRepository.save(user);
-		
+
 	}
-	
+
 	public void EmailValid(String email) {
 		boolean existe = userRepository.existsByEmail(email);
 
-		if(existe) {
+		if (existe) {
 			throw new RuntimeException("Email already used");
 		}
 	}
-
-
 }
