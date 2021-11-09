@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.transaction.Transactional;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -16,6 +18,14 @@ public class UserService {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	public Optional<User> findById(Long id) throws Exception {
+		return userRepository.findById(id);
+	}
+
+	public List<User> findAll() {
+		return userRepository.findAll();
+	}
 	
 	public User getByEmail(String email) throws Exception {
 		return userRepository.findByEmail(email).orElseThrow(() -> new Exception("Email doesnt exists"));

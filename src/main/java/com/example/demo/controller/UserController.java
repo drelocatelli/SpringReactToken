@@ -19,6 +19,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Optional;
+
 @RestController
 @CrossOrigin
 @RequiredArgsConstructor
@@ -36,6 +39,25 @@ public class UserController {
 
 	@Autowired
 	private JwtUserDetailsService userDetailsService;
+
+	@GetMapping("{id}")
+	public ResponseEntity<?> getUserById(@PathVariable("id") Long id) throws Exception {
+		Optional<User> user = service.findById(id);
+
+		if(!user.isPresent()) {
+			return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+		}
+
+		return ResponseEntity.ok(user);
+
+	}
+
+	@GetMapping
+	public ResponseEntity<?> getAllUsers() {
+		List<User> user = service.findAll();
+
+		return ResponseEntity.ok(user);
+	}
 
 	@PostMapping("/login")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest request) throws Exception {
