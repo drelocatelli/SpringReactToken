@@ -57,14 +57,14 @@ public class UserController {
 		}
 	}
 
-	@PostMapping
+	@PostMapping("/register")
 	public ResponseEntity salvar(@RequestBody UserDTO dto) {
 		if(
 				dto.getUsername().isEmpty() ||
 				dto.getEmail().isEmpty() ||
 				dto.getPassword().isEmpty()
 		) {
-			return new ResponseEntity("Fields cannot be null!", HttpStatus.UNPROCESSABLE_ENTITY);
+			return new ResponseEntity("Fields can not be null!", HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 
 		if(!ValidateEmail.isValidEMail(dto.getEmail())) {
