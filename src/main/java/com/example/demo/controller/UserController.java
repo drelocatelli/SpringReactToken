@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.JwtRequest;
 import com.example.demo.dto.JwtResponse;
 import com.example.demo.dto.UserDTO;
+import com.example.demo.dto.UserTokenDTO;
 import com.example.demo.repository.UserRepositoryPaging;
 import com.example.demo.security.util.JwtTokenUtil;
 import com.example.demo.security.util.ValidateEmail;
@@ -18,9 +19,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +48,14 @@ public class UserController {
 
 	@Autowired
 	private JwtUserDetailsService userDetailsService;
+
+	@GetMapping("/me")
+	public ResponseEntity<?> verifyUserLoggedIn() throws Exception {
+		// verifica user logged in
+		UserDetails userDetail = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		return ResponseEntity.ok(service.getByEmail(userDetail.getUsername()));
+	}
 
 	@GetMapping(params = {"id"})
 	public ResponseEntity<?> getUserById(@RequestParam("id") Long id) throws Exception {
@@ -72,21 +84,26 @@ public class UserController {
 	@PostMapping("/login")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest request) throws Exception {
 		authenticate(request.getEmail(), request.getPassword());
-		final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-		final String token = jwtTokenUtil.generateToken(userDetails);
 
-		// return token
-		return ResponseEntity.ok(new JwtResponse(token));
+			final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+			final String token = jwtTokenUtil.generateToken(userDetails);
+
+			// retorna usuario autenticado e o token
+			UserTokenDTO userTokenDTO = new UserTokenDTO();
+			userTokenDTO.setToken(token);
+			userTokenDTO.setUser(service.getByEmail(request.getEmail()));
+
+			return ResponseEntity.ok(userTokenDTO);
+
 	}
 
 	private void authenticate(String email, String password) throws Exception {
 		try {
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-		} catch(DisabledException e) {
-			throw new Exception("USER_DISABLED", e);
-		} catch(BadCredentialsException e) {
-			throw new Exception("INVALID_CREDENTIALS", e);
+		} catch(Exception e) {
+			throw new Exception("Exception: ", e);
 		}
+
 	}
 
 	@PostMapping("/register")

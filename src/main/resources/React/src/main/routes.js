@@ -6,15 +6,21 @@ import {Home} from '../pages/home'
 import {Main} from '../pages/Main'
 import {Register} from '../pages/Register'
 
+import {AuthProvider} from '../component/authProvider'
+
+import {PrivateRoute} from '../component/privateRoute'
+
 export default ()  => {
 
     return(
         <BrowserRouter>
-            <Routes>
-                <Route exact path="/" element={Home()} />
-                <Route path={"/main"} element={Main()} />
-                <Route path={"/register"} element={Register()} />
-            </Routes>
+            <AuthProvider>
+                <Routes>
+                    <Route exact path="/" element={<Home/>} />
+                    <Route path={"/main"} element={<PrivateRoute><Main /></PrivateRoute>} />
+                    <Route path={"/register"} element={<Register />} />
+                </Routes>
+            </AuthProvider>
         </BrowserRouter>
     )
     
