@@ -1,15 +1,10 @@
-import axios from 'axios';
 import React from 'react'
-
-import {api} from '../main/API'
 
 let AuthContext = React.createContext();
 
 export const AuthProvider = ({children}) => {
 
     let [isAuth, setAuth] = React.useState(false);
-
-    
 
     const changeToAuth = (callback) => {
         setAuth(true)

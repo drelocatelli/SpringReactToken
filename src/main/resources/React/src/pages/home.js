@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {Button, Grid, TextField, Link} from "@mui/material";
+import {Button, Grid, TextField, Link, Alert} from "@mui/material";
 import {useNavigate} from 'react-router-dom'
 
 import {api} from '../main/API'
@@ -49,10 +49,14 @@ export const Home = () => {
         <form onSubmit={onSubmit}>
             <Grid container spacing={2}  direction="column" alignItems="center" justifyContent="center">
                 <Grid item xs={3}>
-                    <h3>Welcome to the jungle</h3> 
-                    <p>{message}</p>
+                    <h3>Welcome to the jungle</h3>
+                    {(message) &&
+                        <Alert severity={"error"}>
+                            {message}
+                        </Alert>
+                    }
                 </Grid>
-                <Grid container spacing={1} direction={"column"}  direction="column" alignItems="center" justifyContent="center">
+                <Grid container item spacing={1} direction={"column"}  direction="column" alignItems="center" justifyContent="center">
                     <Grid item xs={3}>
                         <TextField label={"Email"} type={"email"} value={email} onChange={e => {setEmail(e.target.value)}}></TextField>
                     </Grid>

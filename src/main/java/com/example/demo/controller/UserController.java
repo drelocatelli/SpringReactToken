@@ -113,11 +113,11 @@ public class UserController {
 				dto.getEmail().isEmpty() ||
 				dto.getPassword().isEmpty()
 		) {
-			return new ResponseEntity("Fields can not be null!", HttpStatus.UNPROCESSABLE_ENTITY);
+			return new ResponseEntity("Fields can not be null.", HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 
 		if(!ValidateEmail.isValidEMail(dto.getEmail())) {
-			return new ResponseEntity("Write a valid email!", HttpStatus.UNPROCESSABLE_ENTITY);
+			return new ResponseEntity("Write a valid email.", HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 
 		User user = User.builder()
