@@ -1,12 +1,13 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.JwtRequest;
-import com.example.demo.dto.JwtResponse;
 import com.example.demo.dto.UserDTO;
 import com.example.demo.dto.UserTokenDTO;
+import com.example.demo.model.Department;
 import com.example.demo.repository.UserRepositoryPaging;
 import com.example.demo.security.util.JwtTokenUtil;
 import com.example.demo.security.util.ValidateEmail;
+import com.example.demo.service.DepartmentService;
 import com.example.demo.service.JwtUserDetailsService;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,15 +17,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.example.demo.model.User;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +33,9 @@ public class UserController {
 
 	@Autowired
 	private UserService service;
+
+	@Autowired
+	private DepartmentService departmentService;
 
 	@Autowired
 	private UserRepositoryPaging userRepositoryPaging;
@@ -107,11 +107,12 @@ public class UserController {
 	}
 
 	@PostMapping("/register")
-	public ResponseEntity salvar(@RequestBody UserDTO dto) {
+	public ResponseEntity salvar(@RequestBody UserDTO dto) throws Exception {
 		if(
 				dto.getUsername().isEmpty() ||
 				dto.getEmail().isEmpty() ||
-				dto.getPassword().isEmpty()
+				dto.getPassword().isEmpty() ||
+				dto.getDepartment().toString().isEmpty()
 		) {
 			return new ResponseEntity("Fields can not be null.", HttpStatus.UNPROCESSABLE_ENTITY);
 		}
@@ -120,10 +121,13 @@ public class UserController {
 			return new ResponseEntity("Write a valid email.", HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 
+		Department departmentById = departmentService.getById(dto.getDepartment());
+
 		User user = User.builder()
 				.username(dto.getUsername())
 				.email(dto.getEmail())
 				.password(dto.getPassword())
+				.department(departmentById)
 				.build();
 
 		try {

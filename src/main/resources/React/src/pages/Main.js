@@ -62,7 +62,9 @@ export const Main = () => {
                     </TableHead>
 
                     <TableBody>
-                        {data.map((user) => {
+                        {data.filter(i => {
+                            return i.email !== email
+                        }).map((user) => {
                             return (
                                 <TableRow>
                                     <TableCell>{user.id}</TableCell>

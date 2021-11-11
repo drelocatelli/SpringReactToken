@@ -28,4 +28,7 @@ public class User {
 	@Column
 	private String password;
 
+	@ManyToOne
+	private Department department;
+
 }
