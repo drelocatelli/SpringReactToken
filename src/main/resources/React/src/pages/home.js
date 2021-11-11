@@ -34,7 +34,7 @@ export const Home = () => {
     const onSubmit = (e) => {
         e.preventDefault()
 
-        api().post('/login', { email, password })
+        api().post('/user/login', { email, password })
             .then(response => {
                 window.localStorage.setItem("userLoggedIn", response.data.token)
                 auth.changeToAuth(() => navigate('/main'))
