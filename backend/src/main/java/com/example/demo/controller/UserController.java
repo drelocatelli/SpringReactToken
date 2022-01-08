@@ -6,7 +6,6 @@ import com.example.demo.dto.UserTokenDTO;
 import com.example.demo.model.Department;
 import com.example.demo.repository.UserRepositoryPaging;
 import com.example.demo.security.util.JwtTokenUtil;
-import com.example.demo.security.util.ValidateEmail;
 import com.example.demo.service.DepartmentService;
 import com.example.demo.service.JwtUserDetailsService;
 import com.example.demo.service.UserService;
@@ -18,12 +17,16 @@ import org.springframework.http.ResponseEntity;
 import com.example.demo.model.User;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+
+import static com.example.demo.security.util.EmailValidator.*;
+import static com.example.demo.security.util.UserAuthenticator.*;
 
 @RestController
 @CrossOrigin
@@ -41,9 +44,6 @@ public class UserController {
 	private UserRepositoryPaging userRepositoryPaging;
 
 	@Autowired
-	private AuthenticationManager authenticationManager;
-
-	@Autowired
 	private JwtTokenUtil jwtTokenUtil;
 
 	@Autowired
@@ -51,22 +51,22 @@ public class UserController {
 
 	@GetMapping("/me")
 	public ResponseEntity<?> verifyUserLoggedIn() throws Exception {
-		// verifica user logged in
+		// verifica se usuário está logado
 		UserDetails userDetail = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-		return ResponseEntity.ok(service.getByEmail(userDetail.getUsername()));
+		String username = userDetail.getUsername();
+		return ResponseEntity.ok(service.getByEmail(username));
 	}
 
 	@GetMapping(params = {"id"})
 	public ResponseEntity<?> getUserById(@RequestParam("id") Long id) throws Exception {
 		Optional<User> user = service.findById(id);
 
-		if(!user.isPresent()) {
+		if (!user.isPresent()) {
 			return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
 		}
 
 		return ResponseEntity.ok(user);
-
 	}
 
 	@GetMapping("/perpage")
@@ -75,68 +75,52 @@ public class UserController {
 	}
 
 	@GetMapping
-	public ResponseEntity<?> getAllUsers() {
-		List<User> user = service.findAll();
-
-		return ResponseEntity.ok(user);
+	public ResponseEntity<List<User>> getAllUsers() {
+		List<User> users = service.findAll();
+		return ResponseEntity.ok(users);
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest request) throws Exception {
+	public ResponseEntity<UserTokenDTO> createAuthenticationToken(@RequestBody JwtRequest request) throws Exception {
 		authenticate(request.getEmail(), request.getPassword());
 
-			final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-			final String token = jwtTokenUtil.generateToken(userDetails);
+		UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+		String token = jwtTokenUtil.generateToken(userDetails);
 
-			// retorna usuario autenticado e o token
-			UserTokenDTO userTokenDTO = new UserTokenDTO();
-			userTokenDTO.setToken(token);
-			userTokenDTO.setUser(service.getByEmail(request.getEmail()));
+		// retorna usuário autenticado junto ao token
+		UserTokenDTO userTokenDTO = new UserTokenDTO();
+		userTokenDTO.setToken(token);
+		userTokenDTO.setUser(service.getByEmail(request.getEmail()));
 
-			return ResponseEntity.ok(userTokenDTO);
-
-	}
-
-	private void authenticate(String email, String password) throws Exception {
-		try {
-			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-		} catch(Exception e) {
-			throw new Exception("Exception: ", e);
-		}
-
+		return ResponseEntity.ok(userTokenDTO);
 	}
 
 	@PostMapping("/register")
-	public ResponseEntity salvar(@RequestBody UserDTO dto) throws Exception {
-		if(
-				dto.getUsername().isEmpty() ||
-				dto.getEmail().isEmpty() ||
-				dto.getPassword().isEmpty() ||
-				dto.getDepartment().toString().isEmpty()
-		) {
-			return new ResponseEntity("Fields can not be null.", HttpStatus.UNPROCESSABLE_ENTITY);
+	public ResponseEntity<?> salvar(@RequestBody UserDTO dto) throws Exception {
+		if (dto.existsEmptyFields()) {
+			return new ResponseEntity<>("Fields can not be null.", HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 
-		if(!ValidateEmail.isValidEMail(dto.getEmail())) {
-			return new ResponseEntity("Write a valid email.", HttpStatus.UNPROCESSABLE_ENTITY);
+		if (emailIsValid(dto.getEmail())) {
+			return new ResponseEntity<>("Write a valid email.", HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 
-		Department departmentById = departmentService.getById(dto.getDepartment());
+		Department department = departmentService.getById(dto.getDepartment());
 
-		User user = User.builder()
+		User user = User
+				.builder()
 				.username(dto.getUsername())
 				.email(dto.getEmail())
 				.password(dto.getPassword())
-				.department(departmentById)
+				.department(department)
 				.build();
 
 		try {
 			User userSaved = service.saveUser(user);
-			return new ResponseEntity(userSaved, HttpStatus.CREATED);
+			return new ResponseEntity<>(userSaved, HttpStatus.CREATED);
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
-
 	}
 
 }

@@ -1,4 +1,5 @@
 package com.example.demo.service;
+
 import java.util.ArrayList;
 
 import lombok.SneakyThrows;
@@ -21,10 +22,9 @@ public class JwtUserDetailsService implements UserDetailsService {
 		com.example.demo.model.User user = userService.getByEmail(email);
 
 		if (user.getEmail().equals(email)) {
-			return new User(email, user.getPassword(),
-					new ArrayList<>());
-		} else {
-			throw new UsernameNotFoundException("User not found with email: " + email);
+			return new User(email, user.getPassword(), new ArrayList<>());
 		}
+		
+		throw new UsernameNotFoundException("User not found with email: " + email);
 	}
 }

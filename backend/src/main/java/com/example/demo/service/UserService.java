@@ -28,25 +28,23 @@ public class UserService {
 	}
 
 	public User getByEmail(String email) throws Exception {
-		return userRepository.findByEmail(email).orElseThrow(() -> new Exception("Email doesnt exists"));
+		return userRepository.findByEmail(email)
+				.orElseThrow(() -> new Exception("Email doesnt exists"));
 	}
 
 	@Transactional
 	public User saveUser(User user) {
-		EmailValid(user.getEmail());
+		if (emailAlreadyUsed(user.getEmail())) {
+			throw new RuntimeException("Email already used");
+		}
 
 		String passwordEncrypted = passwordEncoder.encode(user.getPassword());
 		user.setPassword(passwordEncrypted);
 
 		return userRepository.save(user);
-
 	}
 
-	public void EmailValid(String email) {
-		boolean existe = userRepository.existsByEmail(email);
-
-		if (existe) {
-			throw new RuntimeException("Email already used");
-		}
+	private boolean emailAlreadyUsed(String email) {
+		return userRepository.existsByEmail(email);
 	}
 }

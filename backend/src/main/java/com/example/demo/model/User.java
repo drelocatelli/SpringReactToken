@@ -30,5 +30,4 @@ public class User {
 
 	@ManyToOne
 	private Department department;
-
 }

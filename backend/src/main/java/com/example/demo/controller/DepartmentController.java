@@ -24,29 +24,26 @@ public class DepartmentController {
 	@GetMapping("/all")
 	public ResponseEntity<?> getAllDepartments() {
 		List<Department> departments = service.findAll();
-
 		return ResponseEntity.ok(departments);
-
 	}
 
 	@PostMapping("/register")
 	public ResponseEntity<?> salvar(@RequestBody DepartmentDTO dto) {
-
-		if(dto.getTitle().isEmpty()) {
-			return new ResponseEntity("Fields can not be null.", HttpStatus.UNPROCESSABLE_ENTITY);
+		if (dto.getTitle().isEmpty()) {
+			return new ResponseEntity<>("Fields can not be null.", HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 
-		Department department = Department.builder()
+		Department department = Department
+				.builder()
 				.title(dto.getTitle())
 				.build();
 
 		try {
 			Department departmentSaved = service.saveDepartment(department);
-			return new ResponseEntity(departmentSaved, HttpStatus.CREATED);
+			return new ResponseEntity<>(departmentSaved, HttpStatus.CREATED);
 		} catch(Exception e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
-
 	}
 
 }
