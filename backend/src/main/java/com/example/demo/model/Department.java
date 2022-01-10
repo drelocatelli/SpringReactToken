@@ -27,5 +27,4 @@ public class Department {
 	@OneToMany(mappedBy = "department")
 	@JsonBackReference
 	private List<User> users;
-
 }

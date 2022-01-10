@@ -8,7 +8,5 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DepartmentDTO {
-
 	private String title;
-
 }

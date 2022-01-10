@@ -24,7 +24,8 @@ public class DepartmentService {
 	}
 
 	public Department getById(Long id) throws Exception {
-		return repository.findById(id).orElseThrow(() -> new Exception("Department doenst exists"));
+		return repository.findById(id)
+				.orElseThrow(() -> new Exception("Department doenst exists"));
 	}
 
 }
